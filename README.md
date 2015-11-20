@@ -23,11 +23,8 @@ Erythematosus.
 --------------------------------------------------------------------------------
 
 *Abbreviations used in Script titles: 
-<<<<<<< HEAD
+
 PS == Python Script (i.e. "PS1:..." is "Python Script 1:..."
-=======
-PS == Python Script (i.e. PS1 is Python Script 1)
->>>>>>> 3c01b45b159a1261da35aa221a17df4bdc3772c7
 
 ** The Python scripts are listed in the order in which they were utilised during 
 this study, and the script names seen here are the same in the written thesis. 
@@ -112,5 +109,5 @@ Chapter to produce the corresponding results reported in the Results Chapter.
 Each script includes notes initiated with a "#" which served to report the findings
 of the commands as each step was performed on the input data. 
 
-Thus, the notes and instructions in each script is an extension of this README file. 
+Thus, the notes and instructions in each script are an extension of this README file. 
 --------------------------------------------------------------------------------
