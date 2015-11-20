@@ -1,0 +1,198 @@
+#!usr/bin/python
+import sys
+
+## open the verified assoc genes file n = 82/85
+assoc_verified_genes = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH_2.txt')
+
+## open the verified DE genes file n = 736/749
+de_verified_genes = open('/home/stephanie/Desktop/16_July_DE_GENES/Found_DE_genes_in_BioMart.txt')
+
+## Prepare test genes, which is the pooled list of the 82 associated lupus genes and the 736 DE lupus genes which PASSED the verification in Ensemble BioMart
+
+test_genes = []
+
+for line in assoc_verified_genes:
+    genes1 = line.strip()
+    test_genes.append(genes1)
+#print len(test_genes)  ## checkpoint. n == 82 genes
+
+for line in de_verified_genes:
+    genes2 = line.strip()
+    test_genes.append(genes2)
+#print len(test_genes)   ## checkpoint : 82 + 736 == 818 genes cumulative
+    
+set_genes = (set(test_genes))
+
+
+
+## open interacting genes files from database queries -> prepare interactions:
+
+all_targeted_genes = []
+all_ints = []  ## cumulative
+
+
+#1 miRNA verified in miRBase, gene interactions in miRTarBase:
+mirtar1 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA1_ALL_targets_in_mirtarbase.txt')
+for line in mirtar1:
+    lines = line.strip()
+    all_ints.append(lines)
+    lines2 = lines.split(' ')
+    gene = lines2[1].strip(')').strip("'")
+    all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 607 mirna-gene interactions cumulative
+
+
+#2 regex miRNAs verified in miRBase, gene interactions in miRTarBase:
+mirtar2 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA2_ALL_targets_in_mirtarbase.txt')
+for line in mirtar2:
+    lines = line.strip()
+    all_ints.append(lines)
+    lines2 = lines.split(' ')
+    gene = lines2[1].strip(')').strip("'")
+    all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 3322 mirna-gene interactions cumulative. 607 + 2715 = 3322
+
+
+#3 perfect match miRNAs verified in miRBase, gene interactions in miRecords:
+mirec1 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA1_ALL_targets_in_mirecords.txt')
+for line in mirec1:
+     lines = line.strip()
+     all_ints.append(lines)
+     lines2 = lines.split(' ')
+     gene = lines2[1].strip(')').strip("'")
+     all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 3322 mirna-gene interactions cumulative. 607 + 2715 + 5 = 3327
+
+
+#4 regex found miRNAs verified in miRBase, gene interactioins in miRecords:
+mirec2 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA2_ALL_targets_in_mirecords.txt')
+for line in mirec2:
+     lines = line.strip()
+     all_ints.append(lines)
+     lines2 = lines.split(' ')
+     gene = lines2[1].strip(')').strip("'")
+     all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 3322 mirna-gene interactions cumulative. 607 + 2715 + 5 + 6= 3333  
+
+
+#5 regex not found for miRNAs in miRBase, gene interactions in miRecords:              
+mirec3 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA3_ALL_targets_in_mirecords.txt')
+for line in mirec3:
+     lines = line.strip()
+     all_ints.append(lines)
+     lines2 = lines.split(' ')
+     gene = lines2[1].strip(')').strip("'")
+     all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 3322 mirna-gene interactions cumulative. 607 + 2715 + 5 + 6 + 2 = 3335
+
+
+#6 miRNAs NOT verified in miRBase, gene interactions in miRecords
+mirec0 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/found_miRNA0_ALL_targets_in_mirecords.txt')
+for line in mirec0:
+     lines = line.strip()
+     all_ints.append(lines)
+     lines2 = lines.split(' ')
+     gene = lines2[1].strip(')').strip("'")
+     all_targeted_genes.append(gene)
+
+#print all_ints              ##>> miRNA-gene interactions 
+#print all_targeted_genes    ##>> just the targeting genes
+#print len(all_ints)         ## n = 3322 mirna-gene interactions cumulative. 607 + 2715 + 5 + 6 + 2 + 180 = 3515
+
+
+## CREATE A UNIQUE SET OF INTERACTIONS
+
+set_all_ints = set(all_ints)
+#print len(set_all_ints)    ##3401 unique miRNA-gene interactions
+
+new = sorted(set_all_ints)
+#print len(new)   ## checkpoint. n is still = 3401 unique miRNA-gene interactions
+
+
+## CREATE A LIST OF LISTS FOR UNIQUE INTERACTIONS
+ints = []
+genes_only = []
+for line in new:
+    if line != " ":
+        #print line
+        pair = line.strip("()").strip("'").split(' ')
+        miRNA = pair[0].strip(",").strip("'")
+        gene = pair[1].strip("'")
+        ints.append([miRNA, gene])
+        genes_only.append(gene)
+#print len(ints)  ## checkpoint. n is still = 3401 unique gene-miRNA interactions
+
+#print len(genes_only)  ## n = 3401 miRNA-gene interactions ## here the no of lines == no of genes == no of interactions
+#print len(set(genes_only))  ## n = 2702 unique interacting genes
+
+
+for i in set(genes_only):
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_Genes/All_Interacting_Genes_unique', 'a')
+    print i 
+
+## CROSS ANALYSIS TEST 1 ## 
+
+int_genes = []
+not_int_genes = []
+interactions = []
+
+for gene in set_genes:
+    found = False
+    for pairs in ints:
+        if gene == pairs[1]:  
+            interactions.append([pairs[1], pairs[0]])  ## swopped cols so that I can have genes targeted by <- miRNAS for Dict
+            int_genes.append(gene)
+            set_int_genes = set(int_genes)
+            y = sorted(set_int_genes)
+            found = True
+            
+    if found == False:
+        #print gene
+        not_int_genes.append(gene)
+        set_not_int_genes = set(not_int_genes)
+        x = sorted(set_not_int_genes)
+
+#print interactions
+#print len(y)   ## 127/813 from the test genes list ARE in the list of 2702 unique interacting genes
+'''
+for item in y:
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_Genes/verified_Genes_IN_interacting.txt', 'a')
+    print item
+
+#print len(x)    ## 686/813 genes from test genes list ARE NOT in the list of 2702 unique interacting genes
+for item in x:
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_Genes/verified_Genes_NOT_IN_interacting.txt', 'a')
+    print item
+    
+  
+ints_dict = {}
+for line in interactions:
+    lines = str(line).strip().strip("[]").split(' ')
+    keys = lines[0].strip(",").strip("'")  ## miRNAs targeting the...
+    values = lines[1].strip("'")  ## Genes
+    
+    if keys in ints_dict: #test if a given key from the unique list is in the new dict
+        ints_dict[keys].append(values) # if it is, append the corresponding value to the dict. 
+                                       
+    else:
+        ints_dict[keys] = [values]
+
+sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_Genes/verified_Genes_found_interactions.txt', 'a')
+print ints_dict.items()
+#print len(ints_dict) ## 127 miRNA-gene interactions for 127/813 genes FOUND in the list of 2702 unique interacting genes
+'''

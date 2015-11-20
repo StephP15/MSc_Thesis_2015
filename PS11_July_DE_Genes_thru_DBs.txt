@@ -1,0 +1,137 @@
+#!usr/bin/python
+import sys
+from operator import itemgetter, attrgetter
+
+found_DE_genes = open('/home/stephanie/Desktop/16_July_DE_GENES/Found_DE_genes_in_BioMart.txt')
+database1 = open('/home/stephanie/Desktop/Project_2/db1_miRTARBase/hsa_MTI.csv')
+database2 = open('/home/stephanie/Desktop/Project_2/db2_miRecords_database/miRecords_version4.csv')
+
+          
+DE_genes = []
+for line in found_DE_genes:
+    lines = line.strip()
+    DE_genes.append(lines)
+#print len(DE_genes) ## n = 736 genes in assoc gene name format
+#print DE_genes
+
+
+
+### PREPARE MIRTARBASE database:
+mirtar = []
+for index, line in enumerate(database1):
+    if index == 0:
+        continue
+    if line != "":        
+        line = line.strip('\n').strip('"')
+        col = line.split (',')
+        miRTarBase_ID = col[0] #miRTarBase_Target_Gene_ID
+        miRNA = col[1] #miRNA_Name
+        #print miRNA
+        Species_miRNA = col[2] #miRNA_Species
+        Target_Gene = col[3] #miRNA targets This Gene
+        Target_Gene_Entrez_ID= col[4] #Target gene Entrez ID
+        Species_Target_Gene = col[5] #Target gene Species
+        Experiments = col[6] #Experiments used in validation of miRNA targets
+        Support_Type = col[7]
+        References_PMID = col[8] #PubMed IDs for Reference articles
+        mirtar.append([miRTarBase_ID,miRNA,Species_miRNA,Target_Gene,Target_Gene_Entrez_ID,Species_Target_Gene,Experiments,Support_Type,References_PMID])
+#print mirtar
+mirtarbase = []
+for record in mirtar:
+    if record[1].startswith('hsa-miR-'):
+        mirtarbase.append(record)
+#print len(mirtarbase)  ## 37032 human gene-mirna interactions listed in mirecords
+
+### PREPARE miRecords database:
+mirec = []
+for index, line in enumerate(database2):
+    if index == 0:
+        continue
+    if line != "":
+        line = line.strip().split('\t')
+        miRNA = line[6].strip('[]')
+        gene_target = line[2]
+        mirec.append([miRNA, gene_target])
+#print mirec
+        
+mirecords = []
+for item in mirec:
+    if item[0].startswith('hsa-miR-'):
+        mirecords.append(item)
+#print len(mirecords) ## 1888 human gene-mirna interactions listed in mirecords
+#print mirecords
+
+
+#########    analysis of DE GENES  n = 736 (found in BIOMART) thru MIRTARBASE:    #####################    
+
+DE_genes_targets_mirtarbase = []
+DE_genes_NOtargets_mirtarbase = []
+for ID in DE_genes:
+    found = False
+    for entry in mirtarbase:
+        if ID == entry[3] and len(entry[1])>1:
+            result = ID, entry[1]
+            #print result
+            found = True
+            if result not in DE_genes_targets_mirtarbase:
+                DE_genes_targets_mirtarbase.append(result)  
+    if found == False:
+        DE_genes_NOtargets_mirtarbase.append(ID)
+       
+num_genes1 = []
+for item in DE_genes_targets_mirtarbase:
+    if item[0] not in num_genes1:
+        num_genes1.append(item[0])
+#print num_genes1
+#print len(num_genes1)                  ## n = 496/736 genes for which interacting miRNAs were found 
+#print DE_genes_targets_mirtarbase
+#print len(DE_genes_targets_mirtarbase) ##n = 174 gene:mirna interactions
+#print DE_genes_NOtargets_mirtarbase
+#print len(DE_genes_NOtargets_mirtarbase) ##n= 35/ 82 Genes for which interactions were not found
+
+DE_mirtarbase_targets_found_sorted = sorted(DE_genes_targets_mirtarbase,key=itemgetter(0))
+for item in DE_mirtarbase_targets_found_sorted:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/found_DE_genes_ALL_targets_in_mirtarbase.txt', 'a')
+    print item
+    
+DE_genes_NOtargets_mirtarbase_sorted = sorted(DE_genes_NOtargets_mirtarbase)   
+for item in DE_genes_NOtargets_mirtarbase_sorted:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/NOT_found_DE_genes_targets_in_mirtarbase.txt', 'a')
+    print item   
+
+#########    analysis of DE GENES  n = 736 (found in BIOMART) thru MIRECORDS:    #####################    
+
+DE_genes_targets_mirecords = []
+DE_genes_NOtargets_mirecords = []
+for ID in DE_genes:
+    found = False
+    for entry in mirecords:
+        if ID == entry[1] and len(entry[0])>1:
+            result = ID, entry[0]
+            #print result
+            found = True
+            if result not in DE_genes_targets_mirecords:
+                DE_genes_targets_mirecords.append(result)  
+    if found == False:
+        DE_genes_NOtargets_mirecords.append(ID)
+#print DE_genes_NOtargets_mirecords
+
+num_genes2 = []
+for item in DE_genes_targets_mirecords:
+    if item[0] not in num_genes2:
+        num_genes2.append(item[0])
+#print num_genes2  
+#print len(num_genes2) ## 45 unique genes
+
+#print len(DE_genes_targets_mirecords) ##  80 unique gene-mirna interactions
+#print len(DE_genes_NOtargets_mirecords) ## 691 genes for which interacting mirnas were not found in mirecords
+
+DE_mirecords_targets_found_sorted = sorted(DE_genes_targets_mirecords,key=itemgetter(0))
+for item in DE_mirecords_targets_found_sorted:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/found_DE_genes_ALL_targets_in_mirecords.txt', 'a')
+    print item
+    
+DE_genes_NOtargets_mirecords_sorted = sorted(DE_genes_NOtargets_mirecords)   
+for item in DE_genes_NOtargets_mirecords_sorted:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/NOT_found_DE_genes_targets_in_mirecords.txt', 'a')
+    print item 

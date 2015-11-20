@@ -1,0 +1,118 @@
+#!usr/bin/python
+import sys
+
+complete_mirbase = open('/home/stephanie/Desktop/Project_2/miRBase_V_21/mature.fa')
+coordinates = open ('/home/stephanie/Desktop/Project_2/miRBase_V_21/hsa.gff3')
+assoc_miRNAs = open ('/home/stephanie/Desktop/Project_2/1_Data/Pool3_miRNAS_in_SLE_from_Literature/microRNAs_assoc_SLE.txt')
+
+hsa_records = []
+for line in complete_mirbase:
+    line = line.strip()
+    if line[0] == '>':
+        new = line + " "
+    elif line[0] != '>':
+        with_seq = new + line
+        if with_seq.startswith (">"):
+            col = with_seq.lstrip(">")
+            entries = col.split ()
+
+            mirna = entries[0]
+            miRBase_ID = entries[1]
+            genus = entries[2]
+            species = entries[3]
+            mirna_name = entries[4]
+            sequence = entries[5]
+
+#filter mature.fa for records only containing info for Homo sapiens    
+            if genus == "Homo" and species == "sapiens" and mirna.startswith('hsa-miR-') == True:
+                hsa_records.append(entries)
+#print hsa_records
+
+coord_records = []
+for line in coordinates:
+    line = line.strip()
+    if line.startswith('#'):
+        continue
+    else:
+        col = line.split('\t')
+        #print col
+        seqid_chromosome = col[0]
+        source = col[1]
+        type_miRNA = col[2]
+        start = col[3]
+        end = col[4]
+        score = col[5]
+        strand = col[6]
+        phase = col[7]
+        attributes = col[8]
+
+        split_attributes = attributes.split(';')
+        #print split_attributes
+        ID = split_attributes[0].split('=')
+        new_ID = ID[1]
+        Alias = split_attributes[1].split('=')
+        new_Alias = Alias[1]
+        Name = split_attributes[2].split('=')
+        new_Name = Name[1]
+        
+#filter hsa.gff3 for records only containing info for mature miRNA sequences 
+        if new_Name.startswith('hsa-miR-') == True:
+            coord_records.append([seqid_chromosome,start,end,new_Alias,new_Name])
+#print coord_records
+
+complete_record =[]
+for entry in hsa_records:
+    for record in coord_records:
+        if entry[1] == record[3]:
+            output = entry, record[0], record[1], record[2]
+            complete_record.append(output)
+
+mirbase_complete = []
+for entry in complete_record:
+    if entry != '':
+        new_entry = str(entry).strip().strip('()').strip('[]').split(' ')
+        
+        mirna = new_entry[0].strip(',').strip("'")
+        miRBase_ID = new_entry[1].strip(',').strip("'")
+        genus = new_entry[2].strip(',').strip("'")
+        species = new_entry[3].strip(',').strip("'")
+        mirna_name = new_entry[4].strip(',').strip("'")
+        sequence = new_entry[5].strip(',').strip('[]]').strip("'")
+        seqid_chromosome = new_entry[6].strip(',').strip("'")
+        start = new_entry[7].strip(',').strip("'")
+        end = new_entry[8].strip("'")
+        
+        mirbase_complete.append([mirna,miRBase_ID,genus,species,mirna_name,sequence,seqid_chromosome,start,end])
+
+sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/mirbase_complete.txt', 'a')
+for entry in mirbase_complete:
+    print entry
+
+miRNA_list = []
+for miRNA in assoc_miRNAs:
+    ID = miRNA.strip()
+    miRNA_list.append(ID)
+#for entry in miRNA_list:
+ #   print entry
+    
+result = []
+x = []
+for ID in miRNA_list:
+    found = False
+    for entry in mirbase_complete:
+        #print entry
+        if ID == entry[0]:
+            result.append(entry)
+            found = True
+    if found == False:
+        x.append(ID)
+        
+sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/perfect_match_in_miRBase.txt','a')
+print "Number of miRNAs found as a Perfect Match in miRBase: " + str(len(result))
+for item in result:
+    print item
+           
+sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/no_match_in_miRBase.txt','a')
+print "Number of miRNAs not found in miRBase: " + str(len(x))
+for ID in x:
+    print ID

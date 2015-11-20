@@ -1,0 +1,49 @@
+#!usr/bin/python
+import sys
+
+starting_assoc_genes = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH_2.txt')
+starting_de_genes = open('/home/stephanie/Desktop/16_July_DE_GENES/Found_DE_genes_in_BioMart.txt')
+interacting_genes_all = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_Genes/All_Interacting_Genes_unique')
+
+all_genes = []
+known_genes = []
+new_genes = []
+
+
+for line in starting_assoc_genes:
+    lines1 = line.strip()
+    all_genes.append(lines1)
+    known_genes.append(lines1)
+    #print lines1
+    
+for line in starting_de_genes:
+    lines2 = line.strip()
+    all_genes.append(lines2)
+    known_genes.append(lines2)
+    #print lines
+
+for line in interacting_genes_all:
+    genes = line.strip()
+    all_genes.append(genes)
+    new_genes.append(genes)
+
+#print len(known_genes) ## n = 818 genes 
+#print len(new_genes)   ## n = 2702 unique genes found to in both miRecords and miRTarBase to interact with the input list of miRNAs
+#print len(all_genes)   ## n = 3520 genes
+#print len(set(all_genes))  ## n = 3388 unique genes only 
+
+for i in known_genes:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/genes_prep_for_IPA/known_genes.txt', 'a')
+    print i
+    
+for i in new_genes:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/genes_prep_for_IPA/new_genes.txt', 'a')
+    print i 
+
+for i in all_genes:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/genes_prep_for_IPA/all_genes.txt', 'a')
+    print i 
+    
+for i in set(all_genes):
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/genes_prep_for_IPA/SET_all_genes.txt', 'a')
+    print i 

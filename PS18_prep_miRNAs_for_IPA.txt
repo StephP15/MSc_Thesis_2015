@@ -1,0 +1,53 @@
+#!usr/bin/python
+import sys
+
+starting1 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/new_perfect_match_in_miRBase.txt')
+starting2 = open('/home/stephanie/Desktop/June_28_MIRNAs/assoc_micrornas/regex_only.txt')
+interacting1 = open('/home/stephanie/Desktop/SEPT_9/miRNA_prep_for_IPA/unique_interacting_miRNAs.txt')
+
+all_miRNAs = []
+known_miRNAs = []
+new_miRNAs = []
+
+for line in starting1:
+    lines = line.strip()
+    if line.startswith("Number "):
+        continue
+    else:
+        cols = lines.split(" ")
+        miRNA = cols[0].rstrip(',').lstrip('[').strip("'")
+    #print miRNA
+    all_miRNAs.append(miRNA)
+    known_miRNAs.append(miRNA)
+                        
+for line in starting2:
+    lines = line.strip()
+    all_miRNAs.append(lines)
+    known_miRNAs.append(lines)
+    
+for line in interacting1:
+    lines = line.strip()
+    all_miRNAs.append(lines)
+    new_miRNAs.append(lines)
+    
+#print len(known_miRNAs)  ## n = 57 miRNAs
+#print len(new_miRNAs)    ## n = 291 miRNAs    
+#print len(all_miRNAs)  ## n = 348 miRNAs
+#print len(set(all_miRNAs))  ## n = 325 miRNAs
+
+for i in all_miRNAs:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/miRNA_prep_for_IPA/all_miRNAs.txt', 'a')
+    print i
+    
+for i in set(all_miRNAs):
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/miRNA_prep_for_IPA/SET_all_miRNAs.txt', 'a')
+    print i 
+
+for i in known_miRNAs:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/miRNA_prep_for_IPA/known_miRNAs.txt', 'a')
+    print i 
+    
+for i in new_miRNAs:
+    sys.stdout = open('/home/stephanie/Desktop/SEPT_9/miRNA_prep_for_IPA/new_miRNAs.txt', 'a')
+    print i 
+

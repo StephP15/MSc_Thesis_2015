@@ -1,0 +1,152 @@
+#!usr/bin/python
+import sys
+
+## open original miRNA file containing n = 40 miRNAs to check for in databases
+miRNAs_orig = open('/home/stephanie/Desktop/Project_2/1_Data/Pool3_miRNAS_in_SLE_from_Literature/microRNAs_assoc_SLE.txt')
+
+## prepare starting miRNAs
+starting_miRNAs = []
+for line in miRNAs_orig:
+    lines = line.strip()
+    starting_miRNAs.append(lines)
+    set_starting_miRNAs = set(starting_miRNAs)
+#print set_starting_miRNAs
+#print len(set_starting_miRNAs)  ## n = 40 miRNAs
+
+## open interacting miRNAs files from database queries -> prepare interactions:
+
+#1 assoc gene verified in biomart, interactions in miRTarBase:
+all_targeting_mirnas = []
+all_ints = []  ## cumulative
+
+assocgenes_mir_ints_mirtarbase = open('/home/stephanie/Desktop/11_July_assoc_GENES/found_Genes1_ALL_targets_in_mirtarbase.txt')
+for line in assocgenes_mir_ints_mirtarbase:
+    line1 = line.strip()
+    all_ints.append(line1)
+    lines = line.strip().strip("()").split(' ')
+    targeting1 = lines[1].strip("'")
+    #print targeting1
+    all_targeting_mirnas.append(targeting1)
+    
+#print all_targeting_mirnas  ##>> just the targeting miRNAs
+#print all_ints              ##>> gene-miRNA interactions 
+
+#print len(all_ints)         ## n = 174
+
+#2 assoc gene verified in biomart, interactions in miRecords:
+assocgenes_mir_ints_mirecords = open('/home/stephanie/Desktop/11_July_assoc_GENES/found_Genes1_ALL_targets_in_miRecords.txt')
+for line in assocgenes_mir_ints_mirecords:
+    line1 = line.strip()
+    all_ints.append(line1)
+    lines = line.strip().strip("()").split(' ')
+    targeting1 = lines[1].strip("'")
+    #print targeting1
+    all_targeting_mirnas.append(targeting1)
+
+#print len(all_ints)         ## n = 192
+
+#3 DE gene verified in biomart, interactions in miRTarBase:
+degenes_mir_ints_mirtarbase = open('/home/stephanie/Desktop/16_July_DE_GENES/found_DE_genes_ALL_targets_in_mirtarbase.txt')
+for line in degenes_mir_ints_mirtarbase:
+    line1 = line.strip()
+    all_ints.append(line1)
+    lines = line.strip().strip("()").split(' ')
+    targeting1 = lines[1].strip("'")
+    #print targeting1
+    all_targeting_mirnas.append(targeting1)
+ 
+#print len(all_ints)         ## n = 1689
+
+#4 DE verified in biomart, interactions in miRecords:
+degenes_mir_ints_mirecords = open('/home/stephanie/Desktop/16_July_DE_GENES/found_DE_genes_ALL_targets_in_mirecords.txt')
+for line in degenes_mir_ints_mirecords:
+    line1 = line.strip()
+    all_ints.append(line1)
+    lines = line.strip().strip("()").split(' ')
+    targeting1 = lines[1].strip("'")
+    #print targeting1
+    all_targeting_mirnas.append(targeting1)
+
+#print len(all_ints)         ## n = 1769  ##>> these are ALL the gene-miRNA interactions found between the two databases for all the assoc genes and DE genes Verified in BioMart
+
+## CREATE A UNIQUE SET OF INTERACTIONS
+
+set_all_ints = set(all_ints)
+#print len(set_all_ints)    ##1738 unique gene-miRNA interactions
+
+new = sorted(set_all_ints)
+#print len(new)   ## checkpoint. n is still = 1738 unique gene-miRNA interactions
+
+## CREATE A LIST OF LISTS FOR UNIQUE INTERACTIONS
+ints = []
+mirnas_only = []
+for line in new:
+    if line != " ":
+        pair = line.strip("()").strip("'").split(' ')
+        gene = pair[0].strip(",").strip("'")
+        miRNA = pair[1].strip("'")
+        ints.append([gene, miRNA])
+        mirnas_only.append(miRNA)
+#print len(ints)  ## checkpoint. n is still = 1738 unique gene-miRNA interactions
+
+#print len(mirnas_only)  ## n = 1738 unique gene-miRNA interactions
+#print len(set(mirnas_only))  ## n = 291 unique interacting miRNAs
+
+unique_mirnas = set(mirnas_only)
+#print len(unique_mirnas) ## checkpoint == 291 unique miRNAs
+for i in unique_mirnas:
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_miRNAs/unique_interacting_miRNAs.txt','a')
+    print i 
+
+## CROSS ANALYSIS TEST 1 ## 
+
+int_mirnas = []
+not_int_mirnas = []
+interactions = []
+
+for mirna in starting_miRNAs:
+    found = False
+    for pairs in ints:
+        if mirna == pairs[1]:  
+            interactions.append([pairs[1], pairs[0]])  ## swopped cols so that I can have miRNAs targeting -> Genes for Dict
+            int_mirnas.append(mirna)
+            set_int_mirnas = set(int_mirnas)
+            y = sorted(set_int_mirnas)
+            found = True
+            
+    if found == False:
+        #print mirna
+        not_int_mirnas.append(mirna)
+        set_not_int_mirnas = set(not_int_mirnas)
+        x = sorted(set_not_int_mirnas)
+        
+#print len(y)   ## 13 miRNAs from starting list ARE in the list of  interacting miRNAs
+'''
+for item in y:
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_miRNAs/starting_mirnas_IN_interacting.txt', 'a')
+    print item
+
+#print len(x)    ## 27 miRNAs from starting list ARE NOT in the list of interacting miRNAs
+for item in x:
+    sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_miRNAs/starting_mirnas_NOT_IN_interacting.txt', 'a')
+    print item
+'''
+'''  
+ints_dict = {}
+for line in interactions:
+    lines = str(line).strip().strip("[]").split(' ')
+    keys = lines[0].strip(",").strip("'")  ## miRNAs targeting the...
+    values = lines[1].strip("'")  ## Genes
+    
+    if keys in ints_dict: #test if a given key from the unique list is in the new dict
+        ints_dict[keys].append(values) # if it is, append the corresponding value to the dict. 
+                                       
+    else:
+        ints_dict[keys] = [values]
+#sys.stdout = open('/home/stephanie/Desktop/20_July_Cross_analysis/of_miRNAs/starting_mirnas_found_interactions.txt', 'a')
+#print ints_dict.items()
+#print len(ints_dict) 
+vals = []
+vals.append(ints_dict.values())
+print vals
+'''

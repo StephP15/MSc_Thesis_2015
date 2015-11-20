@@ -1,0 +1,137 @@
+#!usr/bin/python
+import sys
+from operator import itemgetter, attrgetter
+
+file1 = open('/home/stephanie/Desktop/11_July_assoc_GENES/ORIGINAL_assoc_SLE_genes.txt')
+file2 = open('/home/stephanie/Desktop/11_July_assoc_GENES/new_list.txt')
+file3 = open('/home/stephanie/Desktop/11_July_assoc_GENES/mart_export.txt')
+file4 = open('/home/stephanie/Desktop/11_July_assoc_GENES/new_list2.txt')
+file5 = open('/home/stephanie/Desktop/11_July_assoc_GENES/mart_export2.txt')
+
+a = [] 
+for line in file2:
+    lines = line.strip()
+    #print lines
+    a.append(lines)
+#print len(a) ## 85
+
+a1 = sorted(a)
+#for gene in a1:
+#    print gene
+
+'''
+b = []
+for line in file3:
+    lines = line.strip().split('\t')
+    b.append(lines)
+print len(b) ##164 with header
+'''
+
+mart_export = []
+for index, line in enumerate(file3):
+    if index == 0:
+        #print line  #check that this line is the header
+        continue  
+    if line != '':
+        lines = line.strip().split('\t')
+        #print lines
+        assoc_gene_name = lines[0] 
+        ens_gene_ID = lines[1] 
+        gene_start = lines[2] 
+        gene_end = lines[3] 
+
+        mart_export.append([assoc_gene_name,ens_gene_ID,gene_start,gene_end])
+#print len(mart_export) ## 163 without header
+
+
+sorted_list = sorted(mart_export,key=itemgetter(0))
+#for item in sorted_list:
+ #   print item
+biomart_NEW = [] ## 82/85
+previous_tag = ''        
+for item in sorted_list:
+        if item[0] != previous_tag:
+            biomart_NEW.append(item)
+            previous_tag = item[0]
+#print len(biomart_NEW) ## 82/85 incls 'LYN' for 'Lyn' because BioMart is NOT CASE SENSITIVE
+
+y = []
+n = []
+for gene in a1:
+    found = False
+    for entry in biomart_NEW:
+        if gene == entry[0]:
+            sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH.txt', 'a')
+            print gene
+            y.append(gene)
+            found = True
+        elif gene == entry[0]:
+            sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH_All_Info.txt', 'a')
+            print gene, entry
+            found = True
+    if found == False:
+        sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Not_Found_assoc_genes_in_BioMart.txt', 'a')
+        print gene
+        n.append(gene)
+        
+#print len(y)    ## 81/85 genes
+#print len(n)    ## 4/ 85 genes : Lyn , IRF53, CRBL1, RABGAPIL
+
+######### PROCEED WITH MANUAL CHECK OF 4/85 GENES IN ENSEMBL BIOMART #########
+z = [] 
+for line in file4:
+    lines = line.strip()
+    #print lines
+    z.append(lines)
+#print len(z) ## 85
+
+z1 = sorted(z)
+mart_export2 = []
+for index, line in enumerate(file5):
+    if index == 0:
+        #print line  #check that this line is the header
+        continue  
+    if line != '':
+        lines = line.strip().split('\t')
+        #print lines
+        assoc_gene_name = lines[0] 
+        ens_gene_ID = lines[1] 
+        gene_start = lines[2] 
+        gene_end = lines[3] 
+
+        mart_export2.append([assoc_gene_name,ens_gene_ID,gene_start,gene_end])
+#print len(mart_export2) ## 164 without header
+
+
+sorted_list = sorted(mart_export2,key=itemgetter(0))
+#for item in sorted_list:
+ #   print item
+biomart_NEW2 = [] ## 82/85
+previous_tag = ''        
+for item in sorted_list:
+        if item[0] != previous_tag:
+            biomart_NEW2.append(item)
+            previous_tag = item[0]
+#print len(biomart_NEW2) ## 83/85 incls 'LYN' for 'Lyn' because BioMart is NOT CASE SENSITIVE
+
+Y = []
+N = []
+for gene in z1:
+    found = False
+    for entry in biomart_NEW2:
+        if gene == entry[0]:
+            sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH_2.txt', 'a')
+            print gene
+            Y.append(gene)
+            found = True
+            sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Biomart_assoc_gene_MATCH_All_Info_2.txt', 'a')
+            print gene, entry
+            found = True
+    if found == False:
+        sys.stdout = open('/home/stephanie/Desktop/11_July_assoc_GENES/Not_Found_assoc_genes_in_BioMart_2.txt', 'a')
+        print gene
+        N.append(gene)
+        
+#print len(Y)    ## 82/85 genes 'RABGAP1L is Found!
+#print len(N)    ## 3/ 85 genes : Lyn , IRF53, CRBL1
+

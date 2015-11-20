@@ -1,0 +1,14 @@
+#!usr/bin/python
+import sys
+
+file1 = open('/home/stephanie/Documents/Oct07/mapped_IDs.csv')
+
+for line in file1:
+    lines = line.strip().split(' ')
+    if lines[0] == lines[1]:
+        sys.stdout = open('/home/stephanie/Documents/Oct07/mapped_IDs_exact_match.txt','a')
+        print lines[0], lines[1]
+        
+    else:
+        sys.stdout = open('/home/stephanie/Documents/Oct07/mapped_IDs_NOT_matched.txt','a')
+        print lines[0], lines[1]

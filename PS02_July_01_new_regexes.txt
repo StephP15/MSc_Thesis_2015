@@ -1,0 +1,115 @@
+#!usr/bin/python
+import sys
+import re
+
+perfect_match= open('/home/stephanie/Desktop/June_28/assoc_micrornas/new_perfect_match_in_miRBase.txt')
+no_match = open('/home/stephanie/Desktop/June_28/assoc_micrornas/no_match_in_miRBase.txt')
+mirbase = open('/home/stephanie/Desktop/June_28/assoc_micrornas/mirbase_complete.txt')
+
+perfect_match_list = []
+for line in perfect_match:
+    if line != " ":
+        new = line.strip().strip("[]").split(' ')
+        miRNA = new[0].strip().strip(",").strip("'")
+        perfect_match_list.append(miRNA)
+#print perfect_match_list ##checkpoint these are the miRNAs that were found as a perfect match. miRNA == miRBase miRNA
+#print len(perfect_match_list) ## ==13
+    
+nomatch_miRNAs = []
+for index, line in enumerate(no_match):
+    if index == 0:
+        continue
+    if line != "":
+        #print line
+        mir = line.strip()
+        nomatch_miRNAs.append(mir)
+#print nomatch_miRNAs ## These are the 27 microRNAs that did not match as is in the miRBase database 
+
+mirbase_db = []
+for line in mirbase:
+    entry = line.strip().strip('[]').split(' ')
+    mirna = entry[0].strip(',').strip("'")
+    miRBase_ID = entry[1].strip(',').strip("'")
+    genus = entry[2].strip(',').strip("'")
+    species = entry[3].strip(',').strip("'")
+    mirna_name = entry[4].strip(',').strip("'")
+    sequence = entry[5].strip(',').strip('[]]').strip("'")
+    seqid_chromosome = entry[6].strip(',').strip("'")
+    start = entry[7].strip(',').strip("'")
+    end = entry[8].strip("'")
+
+    mirbase_db.append([mirna,miRBase_ID,genus,species,mirna_name,sequence,seqid_chromosome,start,end])
+#print mirbase_db
+unique_mirbase_regex = []
+for entry in mirbase_db:
+    orig_id = entry[0]
+   
+    match1 = re.match('hsa-miR-\d+', orig_id)
+    if match1 is not None:
+        result1 = match1.group(0)
+        found = True
+        output1 = [result1, orig_id]
+        #print output1 ## checkpoint
+        if output1 not in unique_mirbase_regex:
+            unique_mirbase_regex.append(output1)
+    
+    match2 = re.match('hsa-miR-\d\d\D', orig_id)
+    if match2 is not None:
+        result2 = match2.group(0)
+        found = True
+        output2 = [result2, orig_id]
+        #print output2 ## checkpoint
+        if output2 not in unique_mirbase_regex:
+            unique_mirbase_regex.append(output2)
+        
+    match3 = re.match('hsa-miR-\d\d\d\D', orig_id)
+    if match3 is not None:
+        result3 = match3.group(0)
+        found = True
+        output3 = [result3, orig_id]
+        #print output3 ## checkpoint
+        if output3 not in unique_mirbase_regex:
+            unique_mirbase_regex.append(output3)
+        
+matches = []
+not_matched = []        
+for ID in nomatch_miRNAs:
+    found = False
+    for item in unique_mirbase_regex:
+         if ID == item[0]:
+            #print [ID, item]  ## ['hsa-miR-126', ['hsa-miR-126', 'hsa-miR-126-5p']]
+            matches.append([ID, item[1]])  ## ['hsa-miR-21', 'hsa-miR-21-5p'], ['hsa-miR-21', 'hsa-miR-21-3p'],....
+            found = True
+    if found == False:
+        not_matched.append(ID)
+
+for item in matches:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/found_regex_matches_in_mirbase.txt','a')
+    print item
+    
+for item in not_matched:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/not_found_regex_matches_in_mirbase.txt','a')
+    print item 
+    
+                     ## 18/27 miRNAs matched as one of the regular expressions
+#print len(matches)  ## 44 regular expressions matched to unique miRNA names in miRBase
+
+#print not_matched   ## ['hsa-miR-61', 'hsa-miR-78', 'hsa-miR-112', 'hsa-miR-189', 
+                     ## 'hsa-miR-1224-3P', 'hsa-miR-17-92', 'hsa-miR-182-96-183', 'hsa-miR-371-5p', 'hsa-miR-513-5p']
+    
+#print len(not_matched) ## 9/27 miRNAs not matched as one of the regular expressions
+
+regex_dict = {}
+
+for item in matches:
+    keys = item[0]
+    values = item[1]
+        
+    if keys in regex_dict: ##test if a given key from the unique list is in the new dict
+        regex_dict[keys].append(values) ## if it is, append the corresponding value to the dict. 
+                                   ## NB because the duplicate values have been removed, each value appended to the key is unique
+    else:
+        regex_dict[keys] = [values] 
+
+sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/regex_dict_results.txt', 'a')
+print regex_dict

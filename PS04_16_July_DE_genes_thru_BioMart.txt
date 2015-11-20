@@ -1,0 +1,88 @@
+#!usr/bin/python
+import sys
+from operator import itemgetter, attrgetter
+
+file1 = open('/home/stephanie/Desktop/Project_2/1_Data/Pool2a_DE_genes_in_SLE_from_Wendy/EnsembleGeneID.txt')
+file2 = open('/home/stephanie/Desktop/Project_2/1_Data/Pool2a_DE_genes_in_SLE_from_Wendy/biomart_DE_genes.txt')
+
+ensembl_list = []
+query_DE_genes = []
+ensembl_list_new = []
+
+##########   PREPARE THE ORIGINAL INPUT FILE OF 749 ENSEMBL GENE IDS     #####################
+        
+for line in file1:
+    if line != '':
+        query = line.strip()
+        query_DE_genes.append(query)
+#print query_DE_genes
+
+
+########## PREPARE THE OUTPUT FILE OF THE BIOMART SEACRH FOR THE ENSEMBL GENE IDS #########
+
+for index1, line in enumerate(file2): ## This is the file with the output of the BioMart search
+    if index1 == 0:
+        #print line  #check that this line is the header
+        continue   
+    if line != '':
+        line = line.strip()
+        line = line.split('\t')
+        #print line
+        ensembl_gene_id = line[0]
+        assoc_gene_name = line[1]
+        gene_start_bp   = line[2]
+        gene_end_bp     = line[3]
+        pheno_descrip   = line[4]
+        status_gene     = line[5]
+        
+        ensembl_list.append([ensembl_gene_id,assoc_gene_name,gene_start_bp,gene_end_bp,pheno_descrip,status_gene])
+#print len(ensembl_list) ## n = 1151 non-unique matches made for the input ensembl gene ids 
+    
+sorted_list = sorted(ensembl_list,key=itemgetter(1))  ## sorted the ensembl_list alphabetically on assoc gene name
+#for item in sorted_list:
+ #   print item
+
+## take the first occurrence of each gene in the ensembl_list and append it to ensembl_list_new
+## thus, it makes a unique list of assoc genes names for the ens id's matched in biomart
+previous_tag = ''        
+for item in sorted_list:
+        if item[1] != previous_tag:
+            ensembl_list_new.append(item)
+            previous_tag = item[1]
+#print ensembl_list_new  
+#print len(ensembl_list_new)  ## n = 736/ 749 genes found in BioMart GUI search
+
+
+##########    USING BOTH THE INPUT FILE (WITH ENSG ID) AND OUTPUT FILE (WITH MATCHED ENSG ID AND ASSOC GENE NAME), 
+##########    FIND WHICH GENES WERE NOT FOUND IN BIOMART:
+
+yes = []
+yes_Allinfo = []
+no = []
+for query in query_DE_genes:
+    found = False
+    for entry in ensembl_list_new:
+        if query == entry[0]:
+            yes.append(entry[1])
+            yes_Allinfo.append([query, entry])
+            found = True
+    if found == False:
+        no.append(query)
+        
+#print len(yes)  ## n = 736 ensg id genes found
+#print len(no)   ## n = 13 ensg id genes NOT found 
+
+NO = sorted(no)
+for item in NO:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/Not_Found_DE_genes_in_BioMart.txt', 'a')
+    print item
+    
+YES = sorted(yes)
+for item in YES:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/Found_DE_genes_in_BioMart.txt', 'a') 
+    print item
+    
+YES_ALLINFO = sorted(yes_Allinfo,key=itemgetter(0))
+for item in YES_ALLINFO:
+    sys.stdout = open('/home/stephanie/Desktop/16_July_DE_GENES/Found_DE_genes_ALLinfo_in_BioMart.txt', 'a')
+    print item

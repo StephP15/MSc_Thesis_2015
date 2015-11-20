@@ -1,0 +1,35 @@
+#!usr/bin/python
+import sys
+
+file1 = open('/home/stephanie/Desktop/dataset_summary.txt')
+
+dataset_summary = []
+for index, line in enumerate(file1):
+    if index == 0:
+        continue
+    if index == 1:
+        continue
+    lines = line.strip().split('\t')
+    dataset_summary.append(lines) 
+
+#strip off 'hsa-' in col[0]
+new_col0 = []
+for item in dataset_summary:
+    if item[0].startswith('hsa-'):
+        new_mir = item[0].strip('hsa-')
+        new_col0.append(new_mir)
+    else:
+        item[0] = item[0]
+        new_col0.append(item[0])
+        
+#for item in new_col0:
+ #   print item
+    ## copy this output into an excel spreadsheet
+    ## hash out this command and proceed
+
+#strip off ' (with seed...)' in col[1]
+new_col1 = []
+for item in dataset_summary:
+    new_mapped = item[1].split(' ')
+    print new_mapped[0]
+    ## copy this output into the same excel spreadsheet, adjacent column

@@ -1,0 +1,115 @@
+#!usr/bin/python
+import sys
+
+not_found_regex = open('/home/stephanie/Desktop/June_28/assoc_micrornas/not_found_regex_matches_in_mirbase.txt')
+database1 = open('/home/stephanie/Desktop/Project_2/db1_miRTARBase/hsa_MTI.csv')
+database2 = open('/home/stephanie/Desktop/Project_2/db2_miRecords_database/miRecords_version4.csv')
+
+mirtarbase_list = []
+for index, line in enumerate(database1):
+    if index == 0:
+        continue
+    if line != "":        
+        line = line.strip('\n').strip('"')
+        col = line.split (',')
+        miRTarBase_ID = col[0] #miRTarBase_Target_Gene_ID
+        miRNA = col[1] #miRNA_Name
+        #print miRNA
+        Species_miRNA = col[2] #miRNA_Species
+        Target_Gene = col[3] #miRNA targets This Gene
+        Target_Gene_Entrez_ID= col[4] #Target gene Entrez ID
+        Species_Target_Gene = col[5] #Target gene Species
+        Experiments = col[6] #Experiments used in validation of miRNA targets
+        Support_Type = col[7]
+        References_PMID = col[8] #PubMed IDs for Reference articles
+        mirtarbase_list.append([miRTarBase_ID,miRNA,Species_miRNA,Target_Gene,Target_Gene_Entrez_ID,Species_Target_Gene,Experiments,Support_Type,References_PMID])
+#print mirtarbase_list
+
+mirecords_list = []
+for index, line in enumerate(database2):
+    if index == 0:
+        continue
+    if line != "":
+        line = line.strip().split('\t')
+        miRNA = line[6].strip('[]')
+        gene_target = line[2]
+        mirecords_list.append([miRNA, gene_target])
+#print mirecords_list
+
+miRNA3 = []
+for line in not_found_regex:
+    not_found_regex_miRNA = line.strip()
+    miRNA3.append(not_found_regex_miRNA)
+#print miRNA3
+
+#########    analysis of NOT_found_regex match in miRBase miRNAs thru MIRTARBASE:    #####################    
+miRNA_targets1_3_mirtarbase = []
+miRNA_NOtargets1_3_mirtarbase = []
+for ID in miRNA3:
+    found = False
+    for entry in mirtarbase_list:
+        if entry[1].startswith('hsa-miR- ') == True:
+            continue
+        if ID == entry[1] and len(entry[3])>1:
+            result = ID, entry[3]
+            #print result
+            found = True
+            if result not in miRNA_targets1_3_mirtarbase:
+                miRNA_targets1_3_mirtarbase.append(result)  
+    if found == False:
+        miRNA_NOtargets1_3_mirtarbase.append(ID)
+#print miRNA_targets1_3_mirtarbase
+#print '\n'
+num_mirs3 = []
+for item in miRNA_targets1_3_mirtarbase:
+    if item[0] not in num_mirs3:
+        num_mirs3.append(item[0])
+#print num_mirs3
+#print len(num_mirs3) # n = 0 unique miRNAs which mapped to genes
+#print len(miRNA_targets1_3_mirtarbase) #n = 0 interactions
+#print miRNA_NOtargets1_3_mirtarbase
+#print len(miRNA_NOtargets1_3_mirtarbase) #n = 9 miRNAs for which interactions were not found
+
+for item in miRNA_targets1_3_mirtarbase:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/found_miRNA3_ALL_targets_in_mirtarbase.txt', 'a')
+    print item
+
+for item in miRNA_NOtargets1_3_mirtarbase:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/NOT_found_miRNA3_ALL_targets_in_mirtarbase.txt', 'a')
+    print item   ## n ==  miRNAs
+
+#########    analysis of NOT_found_regex match in miRBase miRNAs thru MIRECORDS:    ##################### 
+miRNA_targets1_3_mirecords = []
+miRNA_NOtargets1_3_mirecords = []
+for ID in miRNA3:
+    found = False
+    for entry in mirecords_list:
+        if entry[0].startswith('hsa-miR- ') == True:
+            continue
+        if ID == entry[0] and len(entry[1])>1:
+            result = ID, entry[1]
+            #print result
+            found = True
+            if result not in miRNA_targets1_3_mirecords:
+                miRNA_targets1_3_mirecords.append(result)  
+    if found == False:
+        miRNA_NOtargets1_3_mirecords.append(ID)
+#print miRNA_targets1_3_mirecords
+#print '\n'
+num_mirs = []
+for item in miRNA_targets1_3_mirecords:
+    if item[0] not in num_mirs:
+        num_mirs.append(item[0])
+#print num_mirs
+#print len(num_mirs) # n = 1 unique miRNAs which mapped to genes
+#print len(miRNA_targets1_3_mirecords) #n = 2 interactions
+#print miRNA_NOtargets1_3_mirecords
+#print len(miRNA_NOtargets1_3_mirecords) #n = 8 miRNAs for which interactions were not found
+
+for item in miRNA_targets1_3_mirecords:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/found_miRNA3_ALL_targets_in_mirecords.txt', 'a')
+    print item
+
+for item in miRNA_NOtargets1_3_mirecords:
+    sys.stdout = open('/home/stephanie/Desktop/June_28/assoc_micrornas/NOT_found_miRNA3_ALL_targets_in_mirecords.txt', 'a')
+    print item   
